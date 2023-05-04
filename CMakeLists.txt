@@ -8,28 +8,45 @@ find_package(Protobuf REQUIRED)
 # -----------------------------------------------------------------------------
 # Building the tensorboard_logger library
 # -----------------------------------------------------------------------------
+if(Protobuf_FOUND)
+    message(STATUS "Found Protobuf ${Protobuf_VERSION}")
+    message(STATUS "Found Protobuf Headers ${PROTOBUF_INCLUDE_DIRS}")
+    get_target_property(PROTOBUF_INCLUDE_DIRS protobuf::libprotobuf INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "Found Protobuf Include Dirs ${PROTOBUF_INCLUDE_DIRS}")
+else()
+    message(FATAL_ERROR "Protobuf not found")
+endif()
 
-file(GLOB protos "proto/*.proto")
+file(GLOB protos "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${protos})
+foreach(FILE ${protos})
+message(STATUS "Generating ${FILE}")
+endforeach()
 
 add_library(tensorboard_logger
     "src/crc.cc"
     "src/tensorboard_logger.cc"
-    ${PROTO_SRCS}
+)
+
+
+protobuf_generate(
+     LANGUAGE cpp
+     TARGET tensorboard_logger
+     PROTOS ${protos}
+     IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
 )
 
 target_compile_features(tensorboard_logger PRIVATE cxx_std_11)
-target_compile_options(tensorboard_logger PRIVATE -Wall -O2)
+# target_compile_options(tensorboard_logger PRIVATE -Wall -O2)
 
 target_include_directories(tensorboard_logger
 PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIR}>
+    $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIRS}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
-target_link_libraries(tensorboard_logger PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(tensorboard_logger PUBLIC protobuf::libprotobuf)
 
 if (BUILD_TEST)
     add_executable(tensorboard_logger_test tests/test_tensorboard_logger.cc)
