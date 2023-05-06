@@ -28,25 +28,40 @@ add_library(tensorboard_logger
     "src/tensorboard_logger.cc"
 )
 
+if(Protobuf_VERSION VERSION_LESS "3.21.9")
+    message(STATUS "Using protobuf_generate_cpp")
+    protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${protos})
+    target_link_libraries(tensorboard_logger PUBLIC ${Protobuf_LIBRARIES})
+    target_sources(tensorboard_logger PRIVATE ${PROTO_SRCS})
+    target_include_directories(tensorboard_logger
+            PUBLIC
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+            )
+else()
+    message(STATUS "Using protobuf_generate")
+    protobuf_generate(
+            LANGUAGE cpp
+            TARGET tensorboard_logger
+            PROTOS ${protos}
+            IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
+    )
+    target_include_directories(tensorboard_logger
+            PUBLIC
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIRS}>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+            )
+    target_link_libraries(tensorboard_logger PUBLIC protobuf::libprotobuf)
+endif()
 
-protobuf_generate(
-     LANGUAGE cpp
-     TARGET tensorboard_logger
-     PROTOS ${protos}
-     IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
-)
 
 target_compile_features(tensorboard_logger PRIVATE cxx_std_11)
 # target_compile_options(tensorboard_logger PRIVATE -Wall -O2)
 
-target_include_directories(tensorboard_logger
-PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-)
-target_link_libraries(tensorboard_logger PUBLIC protobuf::libprotobuf)
 
 if (BUILD_TEST)
     add_executable(tensorboard_logger_test tests/test_tensorboard_logger.cc)
