@@ -93,22 +93,21 @@ install(
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/tensorboard_loggerConfig.cmake.in"
-    "${PROJECT_BINARY_DIR}/tensorboard_loggerConfig.cmake"
-    INSTALL_DESTINATION
-    ${CMAKE_INSTALL_PREFIX}/cmake
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/tensorboard_loggerConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/tensorboard_loggerConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/tensorboard_logger
 )
 
 install(
     EXPORT tensorboard_logger_Targets
     FILE tensorboard_loggerTargets.cmake
     NAMESPACE tensorboard_logger::
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake
+    DESTINATION lib/cmake/tensorboard_logger
 )
 
 install(
-    FILES "${PROJECT_BINARY_DIR}/tensorboard_loggerConfig.cmake"
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/tensorboard_loggerConfig.cmake"
+    DESTINATION lib/cmake/tensorboard_logger
 )
 
 install(
@@ -118,7 +117,7 @@ install(
 
 install(
     DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
-    DESTINATION include
+    DESTINATION include/tensorboard_logger
     FILES_MATCHING
     PATTERN "*.pb.h"
     PATTERN "CMakeFiles" EXCLUDE
