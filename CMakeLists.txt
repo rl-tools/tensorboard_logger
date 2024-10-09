@@ -33,7 +33,7 @@ add_library(tensorboard_logger
 )
 
 
-if(Protobuf_VERSION VERSION_LESS "3.21.12")
+if(Protobuf_VERSION VERSION_LESS_EQUAL "3.21.12")
     message(STATUS "Using protobuf_generate_cpp")
     protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${protos})
     target_link_libraries(tensorboard_logger PUBLIC ${Protobuf_LIBRARIES})
