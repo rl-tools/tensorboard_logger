@@ -3,7 +3,11 @@ project(tensorboard_logger)
 
 option(BUILD_TEST "Build test" OFF)
 
-find_package(Protobuf CONFIG REQUIRED)
+if(RL_TOOLS_PROTOBUF_NO_CONFIG_PACKAGE)
+    find_package(Protobuf REQUIRED)
+else()
+    find_package(Protobuf CONFIG REQUIRED)
+endif()
 
 # -----------------------------------------------------------------------------
 # Building the tensorboard_logger library
