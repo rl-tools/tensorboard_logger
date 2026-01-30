@@ -60,7 +60,7 @@ int TensorBoardLogger::generate_default_buckets() {
     return 0;
 }
 
-int TensorBoardLogger::add_scalar(const string &tag, int step, double value) {
+int TensorBoardLogger::add_scalar(const string &tag, int64_t step, double value) {
     auto *summary = new Summary();
     auto *v = summary->add_value();
     v->set_tag(tag);
@@ -68,11 +68,11 @@ int TensorBoardLogger::add_scalar(const string &tag, int step, double value) {
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_scalar(const string &tag, int step, float value) {
+int TensorBoardLogger::add_scalar(const string &tag, int64_t step, float value) {
     return add_scalar(tag, step, static_cast<double>(value));
 }
 
-int TensorBoardLogger::add_image(const string &tag, int step,
+int TensorBoardLogger::add_image(const string &tag, int64_t step,
                                  const string &encoded_image, int height,
                                  int width, int channel,
                                  const string &display_name,
@@ -96,7 +96,7 @@ int TensorBoardLogger::add_image(const string &tag, int step,
 }
 
 int TensorBoardLogger::add_images(
-    const std::string &tag, int step,
+    const std::string &tag, int64_t step,
     const std::vector<std::string> &encoded_images, int height, int width,
     const std::string &display_name, const std::string &description) {
     auto *plugin_data = new SummaryMetadata::PluginData();
@@ -139,7 +139,7 @@ void TensorBoardLogger::flusher()
     }
 }
 
-int TensorBoardLogger::add_audio(const string &tag, int step,
+int TensorBoardLogger::add_audio(const string &tag, int64_t step,
                                  const string &encoded_audio, float sample_rate,
                                  int num_channels, int length_frame,
                                  const string &content_type,
@@ -164,7 +164,7 @@ int TensorBoardLogger::add_audio(const string &tag, int step,
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_text(const string &tag, int step, const char *text) {
+int TensorBoardLogger::add_text(const string &tag, int64_t step, const char *text) {
     auto *plugin_data = new SummaryMetadata::PluginData();
     plugin_data->set_plugin_name(kTextPluginName);
 
@@ -227,7 +227,7 @@ int TensorBoardLogger::add_embedding(const std::string &tensor_name,
                                      const std::string &tensordata_path,
                                      const std::string &metadata_path,
                                      const std::vector<uint32_t> &tensor_shape,
-                                     int step) {
+                                     int64_t step) {
     auto *plugin_data = new SummaryMetadata::PluginData();
     plugin_data->set_plugin_name(kProjectorPluginName);
     auto *meta = new SummaryMetadata();
@@ -277,7 +277,7 @@ int TensorBoardLogger::add_embedding(
     const std::vector<std::vector<float>> &tensor,
     const std::string &tensordata_filename,
     const std::vector<std::string> &metadata,
-    const std::string &metadata_filename, int step) {
+    const std::string &metadata_filename, int64_t step) {
     ofstream binary_tensor_file(log_dir_ + tensordata_filename, std::ios::binary);
     if (!binary_tensor_file.is_open()) {
         throw std::runtime_error("failed to open binary tensor file " +
@@ -314,7 +314,7 @@ int TensorBoardLogger::add_embedding(const std::string &tensor_name,
                                      const std::string &tensordata_filename,
                                      const std::vector<std::string> &metadata,
                                      const std::string &metadata_filename,
-                                     int step) {
+                                     int64_t step) {
     ofstream binary_tensor_file(log_dir_ + tensordata_filename, std::ios::binary);
     if (!binary_tensor_file.is_open()) {
         throw std::runtime_error("failed to open binary tensor file " +

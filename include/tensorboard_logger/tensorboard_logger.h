@@ -99,12 +99,12 @@ class TensorBoardLogger {
             flushing_thread.join();
         }
     }
-    int add_scalar(const std::string &tag, int step, double value);
-    int add_scalar(const std::string &tag, int step, float value);
+    int add_scalar(const std::string &tag, int64_t step, double value);
+    int add_scalar(const std::string &tag, int64_t step, float value);
 
     // https://github.com/dmlc/tensorboard/blob/master/python/tensorboard/summary.py#L127
     template <typename T>
-    int add_histogram(const std::string &tag, int step, const T *value,
+    int add_histogram(const std::string &tag, int64_t step, const T *value,
                       size_t num) {
         if (bucket_limits_ == nullptr) {
             generate_default_buckets();
@@ -151,28 +151,28 @@ class TensorBoardLogger {
     }
 
     template <typename T>
-    int add_histogram(const std::string &tag, int step,
+    int add_histogram(const std::string &tag, int64_t step,
                       const std::vector<T> &values) {
         return add_histogram(tag, step, values.data(), values.size());
     }
 
     // metadata (such as display_name, description) of the same tag will be
     // stripped to keep only the first one.
-    int add_image(const std::string &tag, int step,
+    int add_image(const std::string &tag, int64_t step,
                   const std::string &encoded_image, int height, int width,
                   int channel, const std::string &display_name = "",
                   const std::string &description = "");
-    int add_images(const std::string &tag, int step,
+    int add_images(const std::string &tag, int64_t step,
                    const std::vector<std::string> &encoded_images, int height,
                    int width, const std::string &display_name = "",
                    const std::string &description = "");
-    int add_audio(const std::string &tag, int step,
+    int add_audio(const std::string &tag, int64_t step,
                   const std::string &encoded_audio, float sample_rate,
                   int num_channels, int length_frame,
                   const std::string &content_type,
                   const std::string &display_name = "",
                   const std::string &description = "");
-    int add_text(const std::string &tag, int step, const char *text);
+    int add_text(const std::string &tag, int64_t step, const char *text);
 
     int add_hparams(const std::map<std::string, HParamValue> &hparams,
                     const std::vector<std::string> &metrics);
@@ -187,7 +187,7 @@ class TensorBoardLogger {
         const std::string &tensor_name, const std::string &tensordata_path,
         const std::string &metadata_path = "",
         const std::vector<uint32_t> &tensor_shape = std::vector<uint32_t>(),
-        int step = 1 /* no effect */);
+        int64_t step = 1 /* no effect */);
     // write tensor to binary file
     int add_embedding(
         const std::string &tensor_name,
@@ -195,14 +195,14 @@ class TensorBoardLogger {
         const std::string &tensordata_filename,
         const std::vector<std::string> &metadata = std::vector<std::string>(),
         const std::string &metadata_filename = "",
-        int step = 1 /* no effect */);
+        int64_t step = 1 /* no effect */);
     int add_embedding(
         const std::string &tensor_name, const float *tensor,
         const std::vector<uint32_t> &tensor_shape,
         const std::string &tensordata_filename,
         const std::vector<std::string> &metadata = std::vector<std::string>(),
         const std::string &metadata_filename = "",
-        int step = 1 /* no effect */);
+        int64_t step = 1 /* no effect */);
 
    private:
     int generate_default_buckets();
