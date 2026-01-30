@@ -15,6 +15,9 @@
 
 #include "event.pb.h"
 #include "projector_config.pb.h"
+#include "plugin_data.pb.h"
+#include "api.pb.h"
+#include <google/protobuf/struct.pb.h>
 
 using std::endl;
 using std::ifstream;
@@ -181,6 +184,43 @@ int TensorBoardLogger::add_text(const string &tag, int step, const char *text) {
     v->set_allocated_metadata(meta);
 
     return add_event(step, summary);
+}
+
+int TensorBoardLogger::add_hparams(
+    const std::map<std::string, HParamValue> &hparams,
+    const std::vector<std::string> &metrics) {
+    tensorboard::hparams::HParamsPluginData hparams_plugin_data;
+    hparams_plugin_data.set_version(0);
+    auto *session_start_info = hparams_plugin_data.mutable_session_start_info();
+    auto *hparams_map = session_start_info->mutable_hparams();
+    for (const auto &hp : hparams) {
+        google::protobuf::Value value;
+        switch (hp.second.type) {
+            case HParamValue::STRING:
+                value.set_string_value(hp.second.string_val);
+                break;
+            case HParamValue::DOUBLE:
+                value.set_number_value(hp.second.double_val);
+                break;
+            case HParamValue::BOOL:
+                value.set_bool_value(hp.second.bool_val);
+                break;
+        }
+        (*hparams_map)[hp.first] = value;
+    }
+    session_start_info->set_start_time_secs(time(nullptr));
+    std::string serialized;
+    hparams_plugin_data.SerializeToString(&serialized);
+    auto *plugin_data = new SummaryMetadata::PluginData();
+    plugin_data->set_plugin_name(kHParamsPluginName);
+    plugin_data->set_content(serialized);
+    auto *meta = new SummaryMetadata();
+    meta->set_allocated_plugin_data(plugin_data);
+    auto *summary = new Summary();
+    auto *v = summary->add_value();
+    v->set_tag("_hparams_/session_start_info");
+    v->set_allocated_metadata(meta);
+    return add_event(0, summary);
 }
 
 int TensorBoardLogger::add_embedding(const std::string &tensor_name,

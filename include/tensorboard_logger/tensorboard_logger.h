@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
 #include <atomic>
 #include <thread>
 #include <mutex>
@@ -22,6 +23,20 @@ std::string get_basename(const std::string &path);
 const std::string kProjectorConfigFile = "projector_config.pbtxt";
 const std::string kProjectorPluginName = "projector";
 const std::string kTextPluginName = "text";
+const std::string kHParamsPluginName = "hparams";
+
+struct HParamValue {
+    enum Type { STRING, DOUBLE, BOOL };
+    Type type;
+    std::string string_val;
+    double double_val;
+    bool bool_val;
+    HParamValue(const std::string &v) : type(STRING), string_val(v), double_val(0), bool_val(false) {}
+    HParamValue(const char *v) : type(STRING), string_val(v), double_val(0), bool_val(false) {}
+    HParamValue(double v) : type(DOUBLE), string_val(""), double_val(v), bool_val(false) {}
+    HParamValue(int v) : type(DOUBLE), string_val(""), double_val(v), bool_val(false) {}
+    HParamValue(bool v) : type(BOOL), string_val(""), double_val(0), bool_val(v) {}
+};
 
 
 struct TensorBoardLoggerOptions
@@ -158,6 +173,9 @@ class TensorBoardLogger {
                   const std::string &display_name = "",
                   const std::string &description = "");
     int add_text(const std::string &tag, int step, const char *text);
+
+    int add_hparams(const std::map<std::string, HParamValue> &hparams,
+                    const std::vector<std::string> &metrics);
 
     // `tensordata` and `metadata` should be in tsv format, and should be
     // manually created before calling `add_embedding`
