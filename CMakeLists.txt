@@ -33,7 +33,29 @@ add_library(tensorboard_logger
 )
 
 
-if(Protobuf_VERSION VERSION_LESS_EQUAL "3.21.12")
+if(Protobuf_VERSION VERSION_LESS "3.15")
+    # protoc < 3.15 (e.g. Ubuntu 22.04 ships 3.12.4) requires
+    # --experimental_allow_proto3_optional for proto3 optional fields.
+    # protobuf_generate_cpp does not support PROTOC_OPTIONS, so we use
+    # protobuf_generate directly.
+    message(STATUS "Using protobuf_generate with --experimental_allow_proto3_optional (protoc ${Protobuf_VERSION})")
+    protobuf_generate(
+            APPEND_PATH
+            LANGUAGE cpp
+            OUT_VAR PROTO_SRCS
+            PROTOS ${protos}
+            PROTOC_OPTIONS --experimental_allow_proto3_optional
+    )
+    target_link_libraries(tensorboard_logger PUBLIC ${Protobuf_LIBRARIES})
+    target_sources(tensorboard_logger PRIVATE ${PROTO_SRCS})
+    target_include_directories(tensorboard_logger
+            PUBLIC
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    )
+elseif(Protobuf_VERSION VERSION_LESS_EQUAL "3.21.12")
     message(STATUS "Using protobuf_generate_cpp")
     protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${protos})
     target_link_libraries(tensorboard_logger PUBLIC ${Protobuf_LIBRARIES})
